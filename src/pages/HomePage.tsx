@@ -1,11 +1,18 @@
-import { Button } from '@/components/ui/button';
 import { Activity, ArrowUpRight, CreditCard, DollarSign, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import {
     Table,
     TableBody,
@@ -15,303 +22,180 @@ import {
     TableRow,
 } from '@/components/ui/table';
 
+import { getBooks } from '@/http/api';
+import { Book } from '@/types';
+
+const fadeIn = {
+    hidden: { opacity: 0, y: 20 },
+    visible: (i: number) => ({
+        opacity: 1,
+        y: 0,
+        transition: { delay: i * 0.15, duration: 0.4 },
+    }),
+};
+
 const HomePage = () => {
+    // fetch books
+    const { data, isLoading, isError } = useQuery({
+        queryKey: ['books'],
+        queryFn: getBooks,
+        staleTime: 10000,
+    });
+
     return (
-        <>
-            <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
-                <div className="flex min-h-screen w-full flex-col">
-                    <main className="flex flex-1 flex-col gap-4 md:gap-6">
-                        <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-4">
-                            <Card x-chunk="dashboard-01-chunk-0">
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium">
-                                        Total Revenue
-                                    </CardTitle>
-                                    <DollarSign className="h-4 w-4 text-muted-foreground" />
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">$45,231.89</div>
-                                    <p className="text-xs text-muted-foreground">
-                                        +20.1% from last month
-                                    </p>
-                                </CardContent>
-                            </Card>
-                            <Card x-chunk="dashboard-01-chunk-1">
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium">
-                                        Subscriptions
-                                    </CardTitle>
-                                    <Users className="h-4 w-4 text-muted-foreground" />
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">+2350</div>
-                                    <p className="text-xs text-muted-foreground">
-                                        +180.1% from last month
-                                    </p>
-                                </CardContent>
-                            </Card>
-                            <Card x-chunk="dashboard-01-chunk-2">
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium">Sales</CardTitle>
-                                    <CreditCard className="h-4 w-4 text-muted-foreground" />
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">+12,234</div>
-                                    <p className="text-xs text-muted-foreground">
-                                        +19% from last month
-                                    </p>
-                                </CardContent>
-                            </Card>
-                            <Card x-chunk="dashboard-01-chunk-3">
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium">
-                                        Active Now
-                                    </CardTitle>
-                                    <Activity className="h-4 w-4 text-muted-foreground" />
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">+573</div>
-                                    <p className="text-xs text-muted-foreground">
-                                        +201 since last hour
-                                    </p>
-                                </CardContent>
-                            </Card>
-                        </div>
-                        <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
-                            <Card className="xl:col-span-2" x-chunk="dashboard-01-chunk-4">
-                                <CardHeader className="flex flex-row items-center">
-                                    <div className="grid gap-2">
-                                        <CardTitle>Transactions</CardTitle>
-                                        <CardDescription>
-                                            Recent transactions from your store.
-                                        </CardDescription>
-                                    </div>
-                                    <Button asChild size="sm" className="ml-auto gap-1">
-                                        <Link to="#">
-                                            View All
-                                            <ArrowUpRight className="h-4 w-4" />
-                                        </Link>
-                                    </Button>
-                                </CardHeader>
-                                <CardContent>
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead>Customer</TableHead>
-                                                <TableHead className="hidden xl:table-column">
-                                                    Type
-                                                </TableHead>
-                                                <TableHead className="hidden xl:table-column">
-                                                    Status
-                                                </TableHead>
-                                                <TableHead className="hidden xl:table-column">
-                                                    Date
-                                                </TableHead>
-                                                <TableHead className="text-right">Amount</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            <TableRow>
+        <div className="p-6 space-y-6">
+            {/* Page Title */}
+            <motion.h1
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="text-2xl font-bold tracking-tight"
+            >
+                Dashboard
+            </motion.h1>
+
+            {/* Stat Cards */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                {[
+                    { title: 'Total Books', value: data?.data?.length ?? 0, change: '+12%', icon: DollarSign },
+                    { title: 'Authors', value: new Set(data?.data?.map((b: Book) => b.author.name)).size, change: '+5%', icon: Users },
+                    { title: 'Genres', value: new Set(data?.data?.map((b: Book) => b.genre)).size, change: '+3%', icon: CreditCard },
+                    { title: 'Active Now', value: '+573', change: '+201', icon: Activity },
+                ].map((stat, i) => (
+                    <motion.div
+                        key={stat.title}
+                        custom={i}
+                        initial="hidden"
+                        animate="visible"
+                        variants={fadeIn}
+                    >
+                        <Card className="hover:shadow-lg hover:scale-[1.02] transition-all">
+                            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                <CardTitle className="text-sm font-medium">
+                                    {stat.title}
+                                </CardTitle>
+                                <stat.icon className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{stat.value}</div>
+                                <p className="text-xs text-muted-foreground">{stat.change} from last month</p>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+                ))}
+            </div>
+
+            {/* Transactions & Recent Books */}
+            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                {/* Book Transactions */}
+                <motion.div
+                    initial={{ opacity: 0, x: -30 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.6 }}
+                    className="xl:col-span-2"
+                >
+                    <Card>
+                        <CardHeader className="flex flex-row items-center">
+                            <div className="grid gap-2">
+                                <CardTitle>Recent Books</CardTitle>
+                                <CardDescription>
+                                    Latest books added to the store.
+                                </CardDescription>
+                            </div>
+                            <Button asChild size="sm" className="ml-auto gap-1">
+                                <Link to="/dashboard/books">
+                                    View All
+                                    <ArrowUpRight className="h-4 w-4" />
+                                </Link>
+                            </Button>
+                        </CardHeader>
+                        <CardContent>
+                            {isLoading && <p>Loading...</p>}
+                            {isError && <p className="text-red-500">Failed to load books.</p>}
+                            {!isLoading && !isError && (
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Cover</TableHead>
+                                            <TableHead>Title</TableHead>
+                                            <TableHead className="hidden md:table-cell">Genre</TableHead>
+                                            <TableHead className="hidden md:table-cell">Author</TableHead>
+                                            <TableHead className="hidden md:table-cell">Created</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {data?.data?.slice(0, 5).map((book: Book, i: number) => (
+                                            <motion.tr
+                                                key={book._id}
+                                                custom={i}
+                                                initial="hidden"
+                                                animate="visible"
+                                                variants={fadeIn}
+                                                className="hover:bg-muted/50 transition-colors"
+                                            >
                                                 <TableCell>
-                                                    <div className="font-medium">Liam Johnson</div>
-                                                    <div className="hidden text-sm text-muted-foreground md:inline">
-                                                        liam@example.com
-                                                    </div>
+                                                    <img
+                                                        src={book.coverImage}
+                                                        alt={book.title}
+                                                        className="w-12 h-12 rounded-md object-cover"
+                                                    />
                                                 </TableCell>
-                                                <TableCell className="hidden xl:table-column">
-                                                    Sale
+                                                <TableCell className="font-medium">{book.title}</TableCell>
+                                                <TableCell className="hidden md:table-cell">
+                                                    <Badge variant="outline">{book.genre}</Badge>
                                                 </TableCell>
-                                                <TableCell className="hidden xl:table-column">
-                                                    <Badge className="text-xs" variant="outline">
-                                                        Approved
-                                                    </Badge>
+                                                <TableCell className="hidden md:table-cell">
+                                                    {book.author.name}
                                                 </TableCell>
-                                                <TableCell className="hidden md:table-cell lg:hidden xl:table-column">
-                                                    2023-06-23
+                                                <TableCell className="hidden md:table-cell">
+                                                    {new Date(book.createdAt).toLocaleDateString()}
                                                 </TableCell>
-                                                <TableCell className="text-right">
-                                                    $250.00
-                                                </TableCell>
-                                            </TableRow>
-                                            <TableRow>
-                                                <TableCell>
-                                                    <div className="font-medium">Olivia Smith</div>
-                                                    <div className="hidden text-sm text-muted-foreground md:inline">
-                                                        olivia@example.com
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="hidden xl:table-column">
-                                                    Refund
-                                                </TableCell>
-                                                <TableCell className="hidden xl:table-column">
-                                                    <Badge className="text-xs" variant="outline">
-                                                        Declined
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell className="hidden md:table-cell lg:hidden xl:table-column">
-                                                    2023-06-24
-                                                </TableCell>
-                                                <TableCell className="text-right">
-                                                    $150.00
-                                                </TableCell>
-                                            </TableRow>
-                                            <TableRow>
-                                                <TableCell>
-                                                    <div className="font-medium">Noah Williams</div>
-                                                    <div className="hidden text-sm text-muted-foreground md:inline">
-                                                        noah@example.com
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="hidden xl:table-column">
-                                                    Subscription
-                                                </TableCell>
-                                                <TableCell className="hidden xl:table-column">
-                                                    <Badge className="text-xs" variant="outline">
-                                                        Approved
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell className="hidden md:table-cell lg:hidden xl:table-column">
-                                                    2023-06-25
-                                                </TableCell>
-                                                <TableCell className="text-right">
-                                                    $350.00
-                                                </TableCell>
-                                            </TableRow>
-                                            <TableRow>
-                                                <TableCell>
-                                                    <div className="font-medium">Emma Brown</div>
-                                                    <div className="hidden text-sm text-muted-foreground md:inline">
-                                                        emma@example.com
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="hidden xl:table-column">
-                                                    Sale
-                                                </TableCell>
-                                                <TableCell className="hidden xl:table-column">
-                                                    <Badge className="text-xs" variant="outline">
-                                                        Approved
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell className="hidden md:table-cell lg:hidden xl:table-column">
-                                                    2023-06-26
-                                                </TableCell>
-                                                <TableCell className="text-right">
-                                                    $450.00
-                                                </TableCell>
-                                            </TableRow>
-                                            <TableRow>
-                                                <TableCell>
-                                                    <div className="font-medium">Liam Johnson</div>
-                                                    <div className="hidden text-sm text-muted-foreground md:inline">
-                                                        liam@example.com
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="hidden xl:table-column">
-                                                    Sale
-                                                </TableCell>
-                                                <TableCell className="hidden xl:table-column">
-                                                    <Badge className="text-xs" variant="outline">
-                                                        Approved
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell className="hidden md:table-cell lg:hidden xl:table-column">
-                                                    2023-06-27
-                                                </TableCell>
-                                                <TableCell className="text-right">
-                                                    $550.00
-                                                </TableCell>
-                                            </TableRow>
-                                        </TableBody>
-                                    </Table>
-                                </CardContent>
-                            </Card>
-                            <Card x-chunk="dashboard-01-chunk-5">
-                                <CardHeader>
-                                    <CardTitle>Recent Sales</CardTitle>
-                                </CardHeader>
-                                <CardContent className="grid gap-8">
-                                    <div className="flex items-center gap-4">
-                                        <Avatar className="hidden h-9 w-9 sm:flex">
-                                            <AvatarImage src="/avatars/01.png" alt="Avatar" />
-                                            <AvatarFallback>OM</AvatarFallback>
-                                        </Avatar>
-                                        <div className="grid gap-1">
-                                            <p className="text-sm font-medium leading-none">
-                                                Olivia Martin
-                                            </p>
-                                            <p className="text-sm text-muted-foreground">
-                                                olivia.martin@email.com
-                                            </p>
-                                        </div>
-                                        <div className="ml-auto font-medium">+$1,999.00</div>
-                                    </div>
-                                    <div className="flex items-center gap-4">
-                                        <Avatar className="hidden h-9 w-9 sm:flex">
-                                            <AvatarImage src="/avatars/02.png" alt="Avatar" />
-                                            <AvatarFallback>JL</AvatarFallback>
-                                        </Avatar>
-                                        <div className="grid gap-1">
-                                            <p className="text-sm font-medium leading-none">
-                                                Jackson Lee
-                                            </p>
-                                            <p className="text-sm text-muted-foreground">
-                                                jackson.lee@email.com
-                                            </p>
-                                        </div>
-                                        <div className="ml-auto font-medium">+$39.00</div>
-                                    </div>
-                                    <div className="flex items-center gap-4">
-                                        <Avatar className="hidden h-9 w-9 sm:flex">
-                                            <AvatarImage src="/avatars/03.png" alt="Avatar" />
-                                            <AvatarFallback>IN</AvatarFallback>
-                                        </Avatar>
-                                        <div className="grid gap-1">
-                                            <p className="text-sm font-medium leading-none">
-                                                Isabella Nguyen
-                                            </p>
-                                            <p className="text-sm text-muted-foreground">
-                                                isabella.nguyen@email.com
-                                            </p>
-                                        </div>
-                                        <div className="ml-auto font-medium">+$299.00</div>
-                                    </div>
-                                    <div className="flex items-center gap-4">
-                                        <Avatar className="hidden h-9 w-9 sm:flex">
-                                            <AvatarImage src="/avatars/04.png" alt="Avatar" />
-                                            <AvatarFallback>WK</AvatarFallback>
-                                        </Avatar>
-                                        <div className="grid gap-1">
-                                            <p className="text-sm font-medium leading-none">
-                                                William Kim
-                                            </p>
-                                            <p className="text-sm text-muted-foreground">
-                                                will@email.com
-                                            </p>
-                                        </div>
-                                        <div className="ml-auto font-medium">+$99.00</div>
-                                    </div>
-                                    <div className="flex items-center gap-4">
-                                        <Avatar className="hidden h-9 w-9 sm:flex">
-                                            <AvatarImage src="/avatars/05.png" alt="Avatar" />
-                                            <AvatarFallback>SD</AvatarFallback>
-                                        </Avatar>
-                                        <div className="grid gap-1">
-                                            <p className="text-sm font-medium leading-none">
-                                                Sofia Davis
-                                            </p>
-                                            <p className="text-sm text-muted-foreground">
-                                                sofia.davis@email.com
-                                            </p>
-                                        </div>
-                                        <div className="ml-auto font-medium">+$39.00</div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </div>
-                    </main>
-                </div>
-            </main>
-        </>
+                                            </motion.tr>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            )}
+                        </CardContent>
+                    </Card>
+                </motion.div>
+
+                {/* Highlighted Authors (Recent Sales replacement) */}
+                <motion.div
+                    initial={{ opacity: 0, x: 30 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.6 }}
+                >
+                    <Card>
+  <CardHeader>
+    <CardTitle>Top Authors</CardTitle>
+  </CardHeader>
+  <CardContent className="grid gap-6">
+    {data?.data?.slice(0, 3).map((book: Book, i: number) => (
+      <motion.div
+        key={book._id}
+        custom={i}
+        initial="hidden"
+        animate="visible"
+        variants={fadeIn}
+        className="flex items-center gap-4 hover:scale-[1.01] transition-transform"
+      >
+        <Avatar className="hidden h-9 w-9 sm:flex">
+          <AvatarImage src={book.coverImage} alt={book.author?.name ?? "Unknown Author"} />
+          <AvatarFallback>{book?.author?.name?.[0] ?? "?"}</AvatarFallback>
+        </Avatar>
+        <div className="grid gap-1">
+          <p className="text-sm font-medium leading-none">{book?.author?.name ?? "Unknown Author"}</p>
+          <p className="text-sm text-muted-foreground">{book.title}</p>
+        </div>
+        <div className="ml-auto font-medium">{book.genre}</div>
+      </motion.div>
+    ))}
+  </CardContent>
+</Card>
+
+                </motion.div>
+            </div>
+        </div>
     );
 };
 

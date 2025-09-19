@@ -33,7 +33,7 @@ const RegisterPage = () => {
         const name = nameRef.current?.value;
 
         if (!name || !email || !password) {
-            return alert('Please enter email and password');
+            return alert('Please enter name, email and password');
         }
 
         mutation.mutate({ name, email, password });
