@@ -34,7 +34,7 @@ const LoginPage = () => {
     const handleLoginSubmit = () => {
         const email = emailRef.current?.value;
         const password = passwordRef.current?.value;
-        console.log('data', { email, password });
+        
 
         if (!email || !password) {
             return alert('Please enter email and password');
@@ -53,6 +53,7 @@ const LoginPage = () => {
                             <span className="text-red-500 text-sm">{'Something went wrong'}</span>
                         )}
                     </CardDescription>
+                    
                 </CardHeader>
                 <CardContent className="grid gap-4">
                     <div className="grid gap-2">
