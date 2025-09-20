@@ -1,6 +1,7 @@
 import axios from "axios";
 import useTokenStore from "@/store";
 
+
 const api = axios.create({
   // todo: move this value to env variable.
   baseURL: import.meta.env.VITE_PUBLIC_BACKEND_URL,
