@@ -1,4 +1,4 @@
-import { Badge } from '@/components/ui/badge';
+import { Badge } from "@/components/ui/badge";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -6,8 +6,8 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
-import { Button } from '@/components/ui/button';
+} from "@/components/ui/breadcrumb";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -15,14 +15,14 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 import {
   Table,
   TableBody,
@@ -30,13 +30,13 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { getBooks } from '@/http/api';
-import { Book } from '@/types';
-import { useQuery } from '@tanstack/react-query';
-import { CirclePlus, MoreHorizontal } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+} from "@/components/ui/table";
+import { getBooks, deleteBook } from "@/http/api";
+import { Book } from "@/types";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { CirclePlus, MoreHorizontal } from "lucide-react";
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
@@ -48,11 +48,24 @@ const fadeIn = {
 };
 
 const BooksPage = () => {
+  const queryClient = useQueryClient();
+
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['books'],
+    queryKey: ["books"],
     queryFn: getBooks,
     staleTime: 10000,
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteBook,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["books"] });
+    },
+  });
+
+  const handleDelete = (id: string) => {
+    deleteMutation.mutate(id);
+  };
 
   return (
     <div className="space-y-6">
@@ -107,8 +120,12 @@ const BooksPage = () => {
                     </TableHead>
                     <TableHead>Title</TableHead>
                     <TableHead>Genre</TableHead>
-                    <TableHead className="hidden md:table-cell">Author</TableHead>
-                    <TableHead className="hidden md:table-cell">Created</TableHead>
+                    <TableHead className="hidden md:table-cell">
+                      Author
+                    </TableHead>
+                    <TableHead className="hidden md:table-cell">
+                      Created
+                    </TableHead>
                     <TableHead>
                       <span className="sr-only">Actions</span>
                     </TableHead>
@@ -133,9 +150,13 @@ const BooksPage = () => {
                           src={book.coverImage}
                         />
                       </TableCell>
-                      <TableCell className="font-medium">{book.title}</TableCell>
+                      <TableCell className="font-medium">
+                        {book.title}
+                      </TableCell>
                       <TableCell>
-                        <Badge variant="outline">{book.genre ?? "Unknown"}</Badge>
+                        <Badge variant="outline">
+                          {book.genre ?? "Unknown"}
+                        </Badge>
                       </TableCell>
                       <TableCell className="hidden md:table-cell">
                         {book.author?.name ?? "Unknown"}
@@ -157,8 +178,24 @@ const BooksPage = () => {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem>Edit</DropdownMenuItem>
-                            <DropdownMenuItem>Delete</DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                              <Link to={""}>Edit</Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleDelete(book._id)}
+                            >
+                              Delete
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="flex felx-col" asChild>
+                              <a
+                                href={book.file}
+                                download
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                Download
+                              </a>
+                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
